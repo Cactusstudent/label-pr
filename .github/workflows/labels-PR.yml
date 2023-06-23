@@ -10,13 +10,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: setup
-        uses: actions/setup-node@v2
+      - uses: actions/setup-node@v2
       - run: |
-            const { setupNode } = require('@actions/core');
-            setupNode();
-            import foo from './foo.js';
-            console.log(foo);
+          const { setupNode } = require('@actions/core');
+          setupNode();
+          import foo from './foo.js';
+          console.log(foo);
+        
 
       
       - name: Label PR
