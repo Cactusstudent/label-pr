@@ -1,31 +1,55 @@
-name: Label PR
-
 on:
   pull_request:
     types: [opened, synchronize]
 
+name: Add Labels Based on Lines Changed in PR
+
 jobs:
   label:
+    name: Label PR
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - uses: actions/checkout@v2
+      - name: Install jq
+        run: sudo apt-get install -y jq
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.8'
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Label PR
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        GITHUB_PULL_REQUEST_NUMBER: ${{ github.event.pull_request.number }}
-      run: |
-        python label_pr.py
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install PyGithub
+      - name: Calculate Lines Changed
+        id: lines
+        run: |
+          total_lines_changed=0
+          for file in $(git diff --name-only HEAD^..HEAD); do
+              if [ "${file##*.}" != "py" ]; then
+                  continue
+              fi
+              added=$(git diff HEAD^..HEAD $file | grep '^+' | grep -v '+++' | grep -v '^+ *#' | wc -l)
+              deleted=$(git diff HEAD^..HEAD $file | grep '^-' | grep -v '---' | grep -v '^- *#' | wc -l)
+              lines_changed=$(( $added - $deleted ))
+              total_lines_changed=$(( $total_lines_changed + $lines_changed ))
+          done
+          echo "::set-output name=lines_changed::$total_lines_changed"
+      - name: Get Labels
+        id: get_labels
+        run: |
+          labels=$(jq ". | keys | .[]" labels.json)
+          for label in $labels; do
+              threshold=$(jq -r ".[\"$label\"].threshold" labels.json)
+              color=$(jq -r ".[\"$label\"].color" labels.json)
+              if [ $threshold -le ${{ steps.lines.outputs.lines_changed }} ]; then
+                  echo "{\"name\":\"$label\", \"color\":\"$color\"}"
+              fi
+          done
+          echo "::set-output name=labels::$labels"
+      - name: Add Labels
+        uses: andrewmcodes/labeler@master
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          LABELS: ${{ steps.get_labels.outputs.labels }}
+          CONFIG_PATH: ''
