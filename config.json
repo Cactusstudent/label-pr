@@ -1,20 +1,37 @@
 {
-  "labels": {
-    "1+": "1+",
-    "40+": "40+",
-    "100+": "100+",
-    "500+": "500+",
-    "1000+": "1000+",
-    "2000+": "2000+",
-    "5000+": "5000+"
+  "1+": {
+    "threshold": 1,
+    "description": "1 line or more",
+    "color": "0e8a16"
   },
-  "thresholds": {
-    "1+": 1,
-    "40+": 40,
-    "100+": 100,
-    "500+": 500,
-    "1000+": 1000,
-    "2000+": 2000,
-    "5000+": 5000
+  "40+": {
+    "threshold": 40,
+    "description": "40 lines or more",
+    "color": "bfe5bf"
+  },
+  "100+": {
+    "threshold": 100,
+    "description": "100 lines or more",
+    "color": "f2cb61"
+  },
+  "500+": {
+    "threshold": 500,
+    "description": "500 lines or more",
+    "color": "f28d5f"
+  },
+  "1000+": {
+    "threshold": 1000,
+    "description": "1000 lines or more",
+    "color": "ee5b5b"
+  },
+  "2000+": {
+    "threshold": 2000,
+    "description": "2000 lines or more",
+    "color": "b00149"
+  },
+  "5000+": {
+    "threshold": 5000,
+    "description": "5000 lines or more",
+    "color": "6f263d"
   }
 }
