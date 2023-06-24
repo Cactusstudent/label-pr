@@ -1,9 +1,9 @@
+好的，以下是更新后的完整 YAML 文件示例：
+```yaml
 on:
   pull_request:
     types: [opened, synchronize]
-
-name: Add Labels Based on Lines Changed in PR
-
+name: Labels PR
 jobs:
   label:
     name: Label PR
@@ -12,7 +12,6 @@ jobs:
       - uses: actions/checkout@v2
       - name: Install jq
         run: sudo apt-get install -y jq
-
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -53,3 +52,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LABELS: ${{ steps.get_labels.outputs.labels }}
           CONFIG_PATH: ''
+``` 
+请注意，更新后的 YAML 文件中新增了一个步骤 `Install jq`，该步骤会在执行其他操作之前安装 `jq` 工具。
