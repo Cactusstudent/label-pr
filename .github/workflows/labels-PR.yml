@@ -1,5 +1,3 @@
-好的，以下是更新后的完整 YAML 文件示例：
-```yaml
 on:
   pull_request:
     types: [opened, synchronize]
@@ -52,5 +50,3 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           LABELS: ${{ steps.get_labels.outputs.labels }}
           CONFIG_PATH: ''
-``` 
-请注意，更新后的 YAML 文件中新增了一个步骤 `Install jq`，该步骤会在执行其他操作之前安装 `jq` 工具。
