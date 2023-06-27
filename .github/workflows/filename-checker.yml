@@ -21,11 +21,16 @@ jobs:
     - name: Get changed files
       id: file_changes
       run: |
-        echo "FILES_CHANGED=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }})" >> $GITHUB_ENV
+        git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} > changed_files.txt
+        
+    - name: Read changed files
+      id: read_changed_files
+      run: |
+        echo "::set-output name=files::$(cat changed_files.txt)"
         
     - name: Check file names
       run: |
-        for file in $FILES_CHANGED
+        for file in ${{ steps.read_changed_files.outputs.files }}
         do
           if echo "$file" | grep -q '[^a-z0-9_\-./]'; then
             echo "File name contains invalid characters: $file"
