@@ -5,6 +5,10 @@ on:
     types:
       - opened
       - synchronize
+      - reopen
+  push:
+      branches:
+        - main
 
 jobs:
   check_file_paths:
