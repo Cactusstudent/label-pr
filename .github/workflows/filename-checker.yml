@@ -1,0 +1,24 @@
+name: Check File Name
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+
+jobs:
+  check_file_name:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Check file names
+      run: |
+        for file in $(git diff --name-only HEAD^..HEAD)
+        do
+          if [[ ! $file =~ ^[a-z0-9_\-./]+$ ]]; then
+            echo "::error file=$file::File name contains invalid characters"
+          fi
+        done
