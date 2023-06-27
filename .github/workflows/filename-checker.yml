@@ -3,7 +3,11 @@ name: Check File Name
 on:
   pull_request:
     types:
+      - opened
       - synchronize
+  push:
+    branches:
+      - main
 
 jobs:
   check_file_name:
