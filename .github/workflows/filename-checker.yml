@@ -1,45 +1,43 @@
-name: Check File Name
+name: Check File Paths
 
 on:
   pull_request:
     types:
-      - synchronize
       - opened
-      - reopened
-  push:
-    branches:
-      - main
+      - synchronize
 
 jobs:
-  check_file_name:
+  check_file_paths:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Check file names
-      id: check_files
-      run: |
-        for file in $(git diff --name-only HEAD^..HEAD)
-        do
-          if [[ $file =~ [^a-z0-9_\-./] ]]; then
-            echo "File name contains invalid characters: $file"
-            echo "::set-output name=comment::Invalid characters found in file name: $file"
-            exit 1
-          fi
-        done
+      - name: Checkout repository
+        uses: actions/checkout@v2
         
-    - name: Comment on PR
-      uses: actions/github-script@v5
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        script: |
-          const comment = `@${github.actor} Invalid characters found in file names:\n\n${steps.check_files.outputs.comment}`;
-          const { owner, repo, number } = context.issue;
-          github.issues.createComment({
-            owner: owner,
-            repo: repo,
-            issue_number: number,
-            body: comment
-          });
+      - name: Check file paths
+        run: |
+          PR_FILES=$(git diff --name-only --diff-filter=d origin/${{ github.base_ref }} origin/${{ github.head_ref }})
+          INVALID_FILE_PATHS=""
+          for file_path in $PR_FILES; do
+            if [[ ! $file_path =~ ^[0-9a-z_\-./]+$ ]]; then
+              INVALID_FILE_PATHS+="$file_path"$'\n'
+            fi
+          done
+
+          if [ -n "$INVALID_FILE_PATHS" ]; then
+            echo "Invalid file paths found:"
+            echo "$INVALID_FILE_PATHS"
+            echo "::error::Invalid file paths found"
+          fi
+        id: check_file_paths
+
+      - name: Create comment
+        if: steps.check_file_paths.outputs.invalid_file_paths
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body: |
+            ⚠️ Invalid file paths found in this PR:
+            ```
+            ${{ steps.check_file_paths.outputs.invalid_file_paths }}
+            ```
+            Please ensure that file paths only contain the following characters: a-z, 0-9, _, -, ., /
