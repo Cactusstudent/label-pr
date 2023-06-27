@@ -19,12 +19,14 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Check file names
+      id: check_files
       run: |
         for file in $(git diff --name-only HEAD^..HEAD)
         do
           if [[ $file =~ [^a-z0-9_\-./] ]]; then
             echo "File name contains invalid characters: $file"
-            echo "Invalid characters found in file name: $file" >> pr_comment.txt
+            echo "::set-output name=comment::Invalid characters found in file name: $file"
+            exit 1
           fi
         done
         
@@ -33,12 +35,10 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const fs = require('fs');
-          const comment = fs.readFileSync('pr_comment.txt', 'utf8');
-          const payload = {
+          const comment = `@${context.payload.pull_request.user.login} Invalid characters found in file names:\n\n${steps.check_files.outputs.comment}`;
+          github.issues.createComment({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            body: comment.trim()
-          };
-          await github.issues.createComment(payload);
+            body: comment
+          });
