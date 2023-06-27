@@ -18,7 +18,7 @@ jobs:
       run: |
         for file in $(git diff --name-only HEAD^..HEAD)
         do
-          if [[ ! $file =~ ^[a-z0-9_\-./]+$ ]]; then
+          if [[ $file =~ [^a-z0-9_\-./] ]]; then
             echo "::error file=$file::File name contains invalid characters"
           fi
         done
