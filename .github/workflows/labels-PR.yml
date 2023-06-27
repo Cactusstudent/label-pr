@@ -25,17 +25,29 @@ jobs:
       - name: Calculate Lines Changed
         id: lines
         run: |
-          total_lines_changed=0
-          for file in $(git diff --name-only HEAD^..HEAD); do
-              if [ "${file##*.}" != "py" ]; then
-                  continue
-              fi
-              added=$(git diff HEAD^..HEAD $file | grep '^+' | grep -v '+++' | grep -v '^+ *#' | wc -l)
-              deleted=$(git diff HEAD^..HEAD $file | grep '^-' | grep -v '---' | grep -v '^- *#' | wc -l)
-              lines_changed=$(( $added - $deleted ))
-              total_lines_changed=$(( $total_lines_changed + $lines_changed ))
-          done
-          echo "::set-output name=lines_changed::$total_lines_changed"
+          import os
+          from github import Github, context
+          def get_commit_lines(commit):
+              command = ['git', 'diff', '--shortstat', commit]
+              output = subprocess.check_output(command).decode('utf-8').strip()
+              parts = output.split()
+              added = int(parts[1])
+              deleted = int(parts[3])
+              return added - deleted
+
+          def get_total_lines(pr):
+              commits = pr.get_commits()
+              lines = sum(get_commit_lines(commit.sha) for commit in commits)
+              return lines
+
+          g = Github(os.getenv('GITHUB_TOKEN'))
+          pr_number = context.payload.pull_request.number
+          repo = g.get_repo(context.repo.owner + '/' + context.repo.repo)
+          pr = repo.get_pull(pr_number)
+
+          total_lines_changed = get_total_lines(pr)
+          print(f'Total lines changed: {total_lines_changed}')
+          print(f'::set-output name=lines_changed::{total_lines_changed}')
       - name: Get Labels
         id: get_labels
         run: |
