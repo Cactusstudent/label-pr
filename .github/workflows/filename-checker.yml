@@ -35,8 +35,8 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const comment = `@${github.context.actor} Invalid characters found in file names:\n\n${github.context.workflow.runs[0].outputs.comment}`;
-          const { owner, repo, number } = github.context.issue;
+          const comment = `@${github.actor} Invalid characters found in file names:\n\n${steps.check_files.outputs.comment}`;
+          const { owner, repo, number } = context.issue;
           github.issues.createComment({
             owner: owner,
             repo: repo,
