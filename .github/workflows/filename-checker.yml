@@ -8,7 +8,7 @@ on:
       - reopened
   push:
     branches:
-      - main  # 根据您的主分支名称进行修改
+      - main
 
 jobs:
   check_file_name:
@@ -20,9 +20,9 @@ jobs:
       
     - name: Check file names
       run: |
-        for file in $(git diff --name-only HEAD^..HEAD)
+        for file in ${{ github.event.pull_request.changed_files }}
         do
-          if [[ "$file" =~ [^a-z0-9_\-./] ]]; then
+          if echo "$file" | grep -q '[^a-z0-9_\-./]'; then
             echo "File name contains invalid characters: $file"
             echo "::error file=$file::File name contains invalid characters"
             exit 1
