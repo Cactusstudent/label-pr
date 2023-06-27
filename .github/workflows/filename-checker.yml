@@ -35,10 +35,10 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const comment = `@${github.context.payload.pull_request.user.login} Invalid characters found in file names:\n\n${steps.check_files.outputs.comment}`;
+          const comment = `@${github.actor} Invalid characters found in file names:\n\n${steps.check_files.outputs.comment}`;
           github.issues.createComment({
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: github.context.issue.number,
+            owner: github.repository_owner,
+            repo: github.repository,
+            issue_number: github.event.pull_request.number,
             body: comment
           });
