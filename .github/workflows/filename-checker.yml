@@ -3,11 +3,12 @@ name: Check File Name
 on:
   pull_request:
     types:
-      - opened
       - synchronize
+      - opened
+      - reopened
   push:
     branches:
-      - main
+      - main  # 根据您的主分支名称进行修改
 
 jobs:
   check_file_name:
@@ -19,9 +20,9 @@ jobs:
       
     - name: Check file names
       run: |
-        git diff --name-only HEAD^..HEAD | while read -r file
+        for file in $(git diff --name-only HEAD^..HEAD)
         do
-          if [[ $file =~ [^a-z0-9_\-./] ]]; then
+          if echo "$file" | grep -Eq '([^a-z0-9_\-./])'; then
             echo "File name contains invalid characters: $file"
             echo "::error file=$file::File name contains invalid characters"
             exit 1
